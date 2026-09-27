@@ -38,12 +38,12 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   // Memoize background color to prevent string recreation
   const backgroundColor = useMemo(() => {
-    return colorScheme === 'dark' ? '#000000' : '#F5F5F5';
-  }, [colorScheme]);
+    return theme.colors.background;
+  }, [theme]);
 
   // Combined effect for system UI updates to reduce effect overhead
   useEffect(() => {
-    if (runsIOS26) {
+    if (runsIOS26 || Platform.OS === "android") {
       SystemUI.setBackgroundColorAsync(backgroundColor);
     }
     else {

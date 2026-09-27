@@ -4,12 +4,13 @@ import { useRouter } from "expo-router";
 import { Github, Languages, Users } from "lucide-react-native";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Linking } from "react-native";
+import { Linking } from "react-native";
 
 import SettingsHeader from "@/components/SettingsHeader";
 import packageJson from "@/package.json";
 import { useSettingsStore } from "@/stores/settings";
 import Avatar from "@/ui/components/Avatar";
+import { useAlert } from "@/ui/components/AlertProvider";
 import Icon from "@/ui/components/Icon";
 import List from "@/ui/new/List";
 import Typography from "@/ui/new/Typography";
@@ -112,6 +113,7 @@ export default function SettingsAbout() {
   const { t } = useTranslation();
   const settingsStore = useSettingsStore(state => state.personalization);
   const mutateProperty = useSettingsStore(state => state.mutateProperty);
+  const { showAlert } = useAlert();
 
   const CommunityLinks = [
     {
@@ -166,10 +168,10 @@ export default function SettingsAbout() {
       setTapCount(0);
 
       if (settingsStore.showDevMode) {
-        Alert.alert("Dev Mode", "Dev mode désactivé!");
+        showAlert({ title: "Dev Mode", description: "Dev mode désactivé!", icon: "Code" });
         mutateProperty("personalization", { showDevMode: false });
       } else {
-        Alert.alert("Dev Mode", "Dev mode activé!");
+        showAlert({ title: "Dev Mode", description: "Dev mode activé!", icon: "Code" });
         mutateProperty("personalization", { showDevMode: true });
       }
     }

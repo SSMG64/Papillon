@@ -1,13 +1,14 @@
 import { Papicons } from "@getpapillon/papicons";
 import { MenuView, NativeActionEvent } from "@react-native-menu/menu";
 import { router } from "expo-router";
-import React from "react";
-import { Alert, Image, ScrollView } from "react-native";
+import React, { useState } from "react";
+import { Image, ScrollView } from "react-native";
 
 import { removeBalanceFromDatabase } from "@/database/useBalance";
 import { getManager } from "@/services/shared";
 import { useAccountStore } from "@/stores/account";
 import Avatar from "@/ui/components/Avatar";
+import ConfirmDialog from "@/ui/components/ConfirmDialog";
 import Icon from "@/ui/components/Icon";
 import Stack from "@/ui/components/Stack";
 import List from "@/ui/new/List";
@@ -19,6 +20,10 @@ import ActionMenu from "@/ui/components/ActionMenu";
 import { useSafeHorizontalPadding } from "@/ui/hooks/useSafeHorizontalPadding";
 import { useTheme } from "expo-router/react-navigation";
 
+type PendingDeletion =
+  | { type: "account"; account: ReturnType<typeof useAccountStore.getState>["accounts"][number] }
+  | { type: "service"; serviceId: string; serviceName: string };
+
 export default function AccountsView() {
   const safePadding = useSafeHorizontalPadding(16);
   const { colors } = useTheme();
@@ -29,49 +34,34 @@ export default function AccountsView() {
 
   const services = account?.services;
 
+  const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null);
+
   const askDeleteAccount = (targetAccount: (typeof accounts)[number]) => {
-    Alert.alert(
-      "Supprimer le compte",
-      `${targetAccount.firstName} ${targetAccount.lastName}`,
-      [
-        {
-          text: "Annuler",
-          style: "cancel",
-        },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => {
-            store.removeAccount(targetAccount);
-          },
-        },
-      ]
-    );
+    setPendingDeletion({ type: "account", account: targetAccount });
   };
 
   const askDeleteService = (serviceId: string, serviceName: string) => {
-    Alert.alert(serviceName, "Supprimer ce service ?", [
-      {
-        text: "Annuler",
-        style: "cancel",
-      },
-      {
-        text: "Supprimer",
-        style: "destructive",
-        onPress: () => {
-          store.removeServiceFromAccount(serviceId);
-          removeBalanceFromDatabase(serviceId);
-          const manager = getManager();
-          if (manager) {
-            manager.removeService(serviceId);
-          }
-        },
-      },
-    ]);
+    setPendingDeletion({ type: "service", serviceId, serviceName });
+  };
+
+  const confirmPendingDeletion = () => {
+    if (!pendingDeletion) return;
+    if (pendingDeletion.type === "account") {
+      store.removeAccount(pendingDeletion.account);
+    } else {
+      store.removeServiceFromAccount(pendingDeletion.serviceId);
+      removeBalanceFromDatabase(pendingDeletion.serviceId);
+      const manager = getManager();
+      if (manager) {
+        manager.removeService(pendingDeletion.serviceId);
+      }
+    }
+    setPendingDeletion(null);
   };
 
   return (
-    <List
+    <>
+      <List
       style={{ flex: 1, backgroundColor: colors.overground }}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
@@ -228,6 +218,25 @@ export default function AccountsView() {
           </Typography>
         </List.Item>
       </List.Section>
-    </List>
+      </List>
+      <ConfirmDialog
+        visible={pendingDeletion !== null}
+        title={
+          pendingDeletion?.type === "account"
+            ? "Supprimer le compte"
+            : pendingDeletion?.serviceName ?? ""
+        }
+        message={
+          pendingDeletion?.type === "account"
+            ? `${pendingDeletion.account.firstName} ${pendingDeletion.account.lastName}`
+            : "Supprimer ce service ?"
+        }
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        destructive
+        onConfirm={confirmPendingDeletion}
+        onCancel={() => setPendingDeletion(null)}
+      />
+    </>
   );
 }

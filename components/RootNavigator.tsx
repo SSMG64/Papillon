@@ -14,13 +14,14 @@ import {
   STACK_SCREEN_OPTIONS
 } from '@/constants/LayoutScreenOptions';
 import { runsIOS26 } from '@/ui/utils/IsLiquidGlass';
-import { screenOptions } from '@/utils/theme/ScreenOptions';
+import { useScreenOptions } from '@/utils/theme/ScreenOptions';
 import { useAndroidHeaderProps } from './AndroidHeaderBackground';
 import MainTabErrorBoundary from '@/ui/components/MainTabErrorBoundary';
 
 function RootNavigatorContent() {
   const theme = useTheme();
   const androidHeaderProps = useAndroidHeaderProps();
+  const screenOptions = useScreenOptions();
 
   // Memoize combined screen options to prevent object recreation
   const stackScreenOptions = useMemo(() => ({
@@ -29,7 +30,7 @@ function RootNavigatorContent() {
     contentStyle: {
       backgroundColor: theme.colors.background
     }
-  }), [theme]);
+  }), [theme, screenOptions]);
 
   return (
     <View

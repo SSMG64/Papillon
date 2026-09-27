@@ -11,6 +11,8 @@ import {
   Platform,
   Modal,
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import OnboardingInput from "@/components/onboarding/OnboardingInput";
 import { Colors } from "@/utils/subjects/colors";
 import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
@@ -31,6 +33,9 @@ import { LegendList, LegendListRef } from "@legendapp/list";
 import { FlashList } from "@shopify/flash-list";
 import { trackAdvancedEvent } from "@/utils/logger/analytics";
 import { useSafeHorizontalPadding } from "@/ui/hooks/useSafeHorizontalPadding";
+
+const EMOJI_GRID_COLUMNS = 6;
+const EMOJI_GRID_ROW_HEIGHT = 66;
 
 const EmojiItem = memo(({ item, onPress, isSelected }: {item: string, onPress: (emoji: string) => void, isSelected: boolean}) => {
   const theme = useTheme();
@@ -132,7 +137,8 @@ function EmojiPicker({
       const index = emojis
         .slice(0, emojis.indexOf(section))
         .reduce((acc, curr) => acc + curr.data.length, 0);
-      flatListRef.current?.scrollToOffset({ offset: index * 56, animated: false });
+      const row = Math.floor(index / EMOJI_GRID_COLUMNS);
+      flatListRef.current?.scrollToOffset({ offset: row * EMOJI_GRID_ROW_HEIGHT, animated: false });
     }
   }
 
@@ -222,10 +228,10 @@ function EmojiPicker({
       <FlashList
         ref={flatListRef}
         data={flatEmojis}
-        numColumns={6}
+        numColumns={EMOJI_GRID_COLUMNS}
         drawDistance={900}
         recycleItems
-        estimatedItemSize={66}
+        estimatedItemSize={EMOJI_GRID_ROW_HEIGHT}
         keyExtractor={(item, index) => item + index}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -505,13 +511,15 @@ export default function EditSubject() {
         visible={showEmojiPicker}
         onRequestClose={() => setShowEmojiPicker(false)}
       >
-        <EmojiPicker
-          onCancel={() => setShowEmojiPicker(false)}
-          onSelect={emoji => {
-            setSelectedEmoji(emoji);
-            setShowEmojiPicker(false);
-          }}
-        />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <EmojiPicker
+            onCancel={() => setShowEmojiPicker(false)}
+            onSelect={emoji => {
+              setSelectedEmoji(emoji);
+              setShowEmojiPicker(false);
+            }}
+          />
+        </GestureHandlerRootView>
       </Modal>
     </View>
   );

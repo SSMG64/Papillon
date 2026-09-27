@@ -58,7 +58,7 @@ const FakeSplash = ({ isAppReady, instant }: { isAppReady: boolean, instant?: bo
           left: 0,
           zIndex: -1,
         }}
-        resizeMode="cover"
+        resizeMode="contain"
       />
     </Reanimated.View>
   );
