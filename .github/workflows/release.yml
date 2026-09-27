@@ -18,7 +18,7 @@ concurrency:
 jobs:
   release:
     name: Merge & Release
-    if: github.repository == 'PapillonApp/Papillon'
+    if: github.repository == 'SSMG64/Papillon'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
