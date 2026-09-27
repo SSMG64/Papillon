@@ -13,7 +13,7 @@ concurrency:
 jobs:
   merge:
     name: Merge
-    if: github.repository == 'PapillonApp/Papillon'
+    if: github.repository == 'SSMG64/Papillon'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
